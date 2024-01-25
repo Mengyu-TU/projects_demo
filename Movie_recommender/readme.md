@@ -1,5 +1,4 @@
-# Final course project
-## Movie Recommender
+# Movie Recommender
 - This project builds a movie recommender using collaborative filtering.
 
 ## In this folder, you will find these files and a folder with the movie data:
