@@ -1,2 +1,2 @@
-# projects_demo
+# Projects demo
 This repo contains demonstrations of machine learning projects.
