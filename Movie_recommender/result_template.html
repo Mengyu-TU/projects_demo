@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Recommendations</title>
+</head>
+<body>
+    <h1>{{ result.movie_title }}</h1>
+
+    <h2>Recommended Movies:</h2>
+    <ul>
+        {% for neighbor in result.neighbors %}
+            <li>
+                <strong>{{ neighbor['titles'] }}</strong><br>
+                <span style="margin-left: 20px;">Closeness Score: {{ neighbor['score'] }}<br>
+                <span style="margin-left: 20px;">Genres: {{ neighbor.genres }}
+            </li>
+        {% endfor %}
+    </ul>
+
+    {% if result.other_candidates %}
+        <h2> Found more than one matching movie. Other Candidates:</h2>
+        <ul>
+            {% for candidate in result.other_candidates %}
+                <li>{{ candidate }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</html>
