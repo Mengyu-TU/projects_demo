@@ -1,6 +1,5 @@
-# Final course project
-## Movie Recommender
-- This project builds a movie recommender using collaborative filtering.
+# Movie Recommender
+- This project builds a movie recommender using collaborative filtering. You can find the project demo in a Jupyter notebook `movie_recommender_demo.ipynb`. 
 
 ## In this folder, you will find these files and a folder with the movie data:
 
