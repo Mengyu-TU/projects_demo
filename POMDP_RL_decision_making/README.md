@@ -29,7 +29,4 @@ The model uses a POMDP framework combined with reinforcement learning based on t
 - Matplotlib
 - Jupyter Notebook
 
-## Usage
-
-1. Ensure all required packages are installed:
 
