@@ -1,4 +1,4 @@
-# README Brain Tumor Detection with Faster R-CNN and YOLO
+# Brain Tumor Detection with Faster R-CNN and YOLO
 
 ## **The folder contains the following files**:
 1. `faster_R_CNN_brain_tumor_notebook.ipynb`
