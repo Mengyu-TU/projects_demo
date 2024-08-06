@@ -9,3 +9,6 @@ This repo contains demonstrations of machine learning projects.
 - [Brain Tumor Detection Project](https://github.com/Mengyu-TU/projects_demo/tree/main/Brain_tumor_detection)
 - Framework: PyTorch-based
 
+## Project 3: POMDP Reinforcement Learning Decision Making Model
+- [Decision_Making_Model](https://github.com/Mengyu-TU/projects_demo/tree/main/POMDP_RL_decision_making)
+- Framework: Python and MATLAB
