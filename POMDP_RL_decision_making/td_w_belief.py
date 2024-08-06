@@ -6,8 +6,6 @@ def td_w_belief(belief, Q_prev, reward, learning_rate, dir_trial):
     # a higher estimated value. Then, given feedback for this trial, the
     # model updates the values for state-action pairs.
 
-    # Same algorithm as the TD update in sim_POMDP_no_accumulation_RDM.m
-
     # Outputs:
     # Q: updated state-action pairs; action: selected action for this
     # trial; 0 means left, 1 means right
