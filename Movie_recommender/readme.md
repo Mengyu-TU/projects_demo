@@ -16,7 +16,7 @@
 The assignment includes the following files:
 
 1. `movie_recommender_demo.ipynb`: This notebook demonstrate movie recommender API service. It also explores the movie dataset and shows collaborative filtering models with and without regularization.
-2. `movie_recommender_service_class.py`: This data contains restaurant reviews and ground-truth sentiments.
+2. `movie_recommender_service_class.py`: This file contains flask service class.
 3. `movie_recommender_class.py`: This script defines a MovieRecommender class for collaborative filtering-based movie recommendations using TensorFlow. It includes data loading, preprocessing, and model building functionalities. 
 4. `movie_recommendation_service.py`: This file serves a simple web Flask API for movie recommendations, and it can be accessed through the specified routes. The recommendation results are rendered using an HTML template.
 5. `CFmodel.py`: This Python file defines a class named CFModel, which represents a collaborative filtering model. The class is designed to be used with TensorFlow for training collaborative filtering models. 
