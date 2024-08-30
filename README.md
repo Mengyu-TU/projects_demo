@@ -16,3 +16,7 @@ This repo contains demonstrations of machine learning projects.
 ## Project 4: Navigation with Reinforcement Learning in Dynamic Environments
 - [Navigaton_Model](https://github.com/Mengyu-TU/projects_demo/tree/main/Flexible_Navigation_RL)
 - Framework: Python
+
+## Project 5: EEG speech decoding with Sequence-to-Sequence Model
+- [Seq2seq Model](https://github.com/Mengyu-TU/projects_demo/tree/main/EEG_speech_decoding)
+- Framework: PyTorch
