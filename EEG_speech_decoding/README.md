@@ -27,14 +27,6 @@ NWB (Neuroscience without border) for Python: for reading the data file from the
 
 ### Installation
 ```bash
-# Create and activate virtual environment
-python -m venv eeg_env
-
-# Windows activation
-eeg_env\Scripts\activate
-# Unix/MacOS activation
-source eeg_env/bin activate
-
 # Install dependencies
 pip install torch numpy pandas scikit-learn jupyter pynwb
 ```
