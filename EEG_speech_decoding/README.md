@@ -42,10 +42,10 @@ pip install torch numpy pandas scikit-learn jupyter pynwb
 
 ## Usage Instructions
 
-### Data 
-1. Data is from Verwoert, M., Ottenhoff, M. C., Goulis, S., Colon, A. J., Wagner, L., Tousseyn, S., van
-Dijk, J. P., Kubben, P. L., & Herff, C. (2022). Dataset of Speech Production in intracranial
-Electroencephalography. Scientific Data, 9(1), 434. 
+### Data Source
+Verwoert, M., Ottenhoff, M. C., Goulis, S., Colon, A. J., Wagner, L., Tousseyn, S., van
+Dijk, J. P., Kubben, P. L., & Herff, C. (2022). **Dataset of Speech Production in intracranial
+Electroencephalography**. *Scientific Data*, 9(1), 434. 
 Available at [link](https://doi.org/10.1038/s41597-022-01542-9)
 
 
