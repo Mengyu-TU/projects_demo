@@ -61,8 +61,17 @@ def apply_pca(X, n_components=100):
 
     return X_pca
 
-
 def dutch_number_to_words(number_string):
+    """
+        Converts a number string to Dutch words (0-999).
+
+        Args:
+            number_string (str): Number to convert (e.g., "42")
+
+        Returns:
+            str: Dutch word representation (e.g., "tweeënveertig")
+                Returns original string for numbers >= 1000
+    """
     dutch_units = ['nul', 'een', 'twee', 'drie', 'vier', 'vijf', 'zes', 'zeven', 'acht', 'negen']
     dutch_teens = ['tien', 'elf', 'twaalf', 'dertien', 'veertien', 'vijftien', 'zestien', 'zeventien', 'achttien', 'negentien']
     dutch_tens = ['', '', 'twintig', 'dertig', 'veertig', 'vijftig', 'zestig', 'zeventig', 'tachtig', 'negentig']
@@ -99,37 +108,113 @@ def clean_and_convert_to_dutch(word):
         return cleaned_word
 
 
-
-def process_strings(y_cleaned, seq_len=15):
+def word_to_phonemes(word: str) -> list:
     """
-    Process a list of cleaned strings into a character matrix.
+    Convert a Dutch word to a list of phonemes.
 
     Args:
-    y_cleaned (list): List of cleaned strings to process.
-    seq_len (int): Maximum sequence length (default: 15).
+        word (str): Dutch word to convert
 
     Returns:
-    tuple: (y_char_mat, char_to_int, int_to_char)
+        list: List of phonemes using IPA symbols
     """
-    # Define special token
-    PAD_token = ''
+    phoneme_map = {
+        'aa': 'aː', 'ee': 'eː', 'oo': 'oː', 'uu': 'yː',
+        'ie': 'i', 'oe': 'u', 'eu': 'ø', 'ui': 'œy',
+        'ij': 'ɛi', 'ei': 'ɛi', 'ou': 'ʌu', 'au': 'ʌu',
+        'ng': 'ŋ', 'ch': 'x', 'sch': 'sx',
+        'a': 'ɑ', 'e': 'ɛ', 'i': 'ɪ', 'o': 'ɔ', 'u': 'ʏ',
+        'b': 'b', 'd': 'd', 'f': 'f', 'g': 'ɣ', 'h': 'h',
+        'j': 'j', 'k': 'k', 'l': 'l', 'm': 'm', 'n': 'n',
+        'p': 'p', 'r': 'r', 's': 's', 't': 't', 'v': 'v',
+        'w': 'ʋ', 'z': 'z'
+    }
 
-    # Create a dictionary to map characters to integers
-    char_to_int = {char: i + 3 for i, char in enumerate(string.ascii_lowercase)}
-    char_to_int[PAD_token] = 0
+    word = word.lower()
+    i = 0
+    result = []
 
-    # Create a dictionary to map integers to characters
-    int_to_char = {v: k for k, v in char_to_int.items()}
+    while i < len(word):
+        # Check trigraphs
+        if i <= len(word) - 3 and word[i:i + 3] in phoneme_map:
+            result.append(phoneme_map[word[i:i + 3]])
+            i += 3
+        # Check digraphs
+        elif i <= len(word) - 2 and word[i:i + 2] in phoneme_map:
+            result.append(phoneme_map[word[i:i + 2]])
+            i += 2
+        # Single characters
+        elif word[i] in phoneme_map:
+            result.append(phoneme_map[word[i]])
+            i += 1
+        else:
+            result.append(word[i])
+            i += 1
 
-    # Initialize the output matrix
-    y_char_mat = np.full((len(y_cleaned), seq_len), char_to_int[PAD_token], dtype=int)
+    return result
+
+
+def create_phoneme_mappings(word2phoneme):
+    """
+    Create phoneme-to-integer and integer-to-phoneme mappings including PAD token.
+
+    Args:
+        word2phoneme (dict): Dictionary mapping words to their phonemes
+
+    Returns:
+        tuple: (phoneme_to_int, int_to_phoneme) dictionaries
+    """
+    # Get unique phonemes from word_to_phoneme dictionary
+    PAD_token = ' '
+
+    # Create set of unique phonemes
+    phonemes = set()
+    for phoneme_list in word2phoneme.values():
+        phonemes.update(phoneme_list)
+
+    # Create phoneme to integer mapping
+    phoneme_to_int = {phoneme: i + 1 for i, phoneme in enumerate(sorted(phonemes))}
+    phoneme_to_int[PAD_token] = 0  # Add PAD token
+
+    # Create integer to phoneme mapping
+    int_to_phoneme = {v: k for k, v in phoneme_to_int.items()}
+
+    return phoneme_to_int, int_to_phoneme
+
+
+def convert_words_to_phoneme_matrix(words, seq_len, word2phoneme):
+    """
+    Convert words to phoneme integer matrix using word_to_phoneme dictionary.
+
+    Args:
+        words (list): List of words to convert
+        seq_len (int): Maximum sequence length
+        word2phoneme (dict): Dictionary mapping words to phonemes
+
+    Returns:
+        numpy.ndarray: Matrix of integer-encoded phonemes
+    """
+    PAD_token = ' '
+
+    # Get phoneme mappings
+    phoneme_to_int, _ = create_phoneme_mappings(word2phoneme)
+
+    # Initialize matrix with PAD token
+    phoneme_mat = np.full((len(words), seq_len),
+                          phoneme_to_int[PAD_token], dtype=int)
 
     # Fill the matrix
-    for i, strings in enumerate(y_cleaned):
-        # Add characters from the string
-        for j, char in enumerate(strings[:seq_len]):
-            y_char_mat[i, j] = char_to_int[char]
+    for i, word in enumerate(words):
+        # Get phonemes for the word
+        if word in word2phoneme:
+            phoneme_list = word2phoneme[word]
 
-    return y_char_mat, char_to_int, int_to_char
+            # Add phonemes up to seq_len
+            for j, phoneme in enumerate(phoneme_list[:seq_len]):
+                if phoneme in phoneme_to_int:
+                    phoneme_mat[i, j] = phoneme_to_int[phoneme]
+
+    return phoneme_mat
+
 
 

@@ -3,6 +3,17 @@ import torch
 
 
 class Encoder(nn.Module):
+    """
+        LSTM encoder that processes EEG feature sequences into hidden states.
+        Takes EEG features as input and outputs encoded representations for the decoder.
+
+        Args:
+            input_dim (int): Input feature dimension
+            hidden_dim (int): Hidden state dimension
+            num_hidden_layer (int): Number of LSTM layers (default: 1)
+            drop_out (float): Dropout probability (default: 0.0)
+            bidirectional (bool): If True, use bidirectional LSTM (default: False)
+    """
     def __init__(self, input_dim, hidden_dim, num_hidden_layer=1, drop_out=0.0, bidirectional=False):
         super().__init__()
         self.input_dim = input_dim
@@ -12,11 +23,21 @@ class Encoder(nn.Module):
                            dropout=drop_out, bidirectional=bidirectional)
 
     def forward(self, x):
-      output, (hidden, cell) = self.rnn(x)
-      return output, (hidden, cell)
+        output, (hidden, cell) = self.rnn(x)
+        return output, (hidden, cell)
 
 
-class Decoder(nn.Module):
+class DecoderAttn(nn.Module):
+    """
+        Attention-based LSTM decoder that generates phoneme sequences from encoded EEG features.
+        Combines LSTM decoding with attention mechanism to focus on relevant parts of encoder output.
+
+        Args:
+            hidden_dim (int): Hidden state dimension
+            output_dim (int): Output vocabulary size
+            num_layers (int): Number of LSTM layers (default: 1)
+            dropout (float): Dropout probability (default: 0.1)
+    """
     def __init__(self, hidden_dim, output_dim, num_layers=1, dropout=0.1):
         super().__init__()
         self.hidden_dim = hidden_dim
@@ -62,8 +83,16 @@ class Decoder(nn.Module):
 
         return output, hidden, attn_weights
 
+class EncoderDecoderAttn(nn.Module):
+    """
+        Sequence-to-sequence model with attention mechanism for EEG-to-phoneme decoding.
+        Combines LSTM encoder, attention-based LSTM decoder to convert EEG features
+        into phoneme sequences.
 
-class EncoderDecoder(nn.Module):
+        Args:
+            encoder (nn.Module): LSTM encoder for processing EEG input
+            decoder (nn.Module): Attention-based LSTM decoder for phoneme generation
+    """
     def __init__(self, encoder, decoder):
         """
         Initialize the EncoderDecoder model.
@@ -125,5 +154,95 @@ class EncoderDecoder(nn.Module):
             # If teacher forcing, use actual next token as next input
             # If not, use predicted token
             input = trg[:, t].unsqueeze(1) # if teacher_force else output.argmax(1)
+
+        return outputs
+
+class Decoder(nn.Module):
+    """
+        LSTM decoder that converts encoded EEG features to phoneme sequences.
+        Takes hidden states from encoder and generates phoneme probabilities one step at a time.
+        Uses embedding layer, LSTM, and final projection layer.
+
+        Args:
+            hidden_dim (int): Hidden state dimension
+            output_dim (int): Output vocabulary size
+            num_layers (int): Number of LSTM layers (default: 1)
+            dropout (float): Dropout probability (default: 0.1)
+        """
+    def __init__(self, hidden_dim, output_dim, num_layers=1, dropout=0.1):
+        super().__init__()
+        self.hidden_dim = hidden_dim
+        self.output_dim = output_dim
+        self.dropout = nn.Dropout(dropout)
+        self.embedding = nn.Embedding(output_dim, 1)  # Add embedding layer
+        self.rnn_cell = nn.LSTM(1, hidden_dim, num_layers, batch_first=True)
+        self.fc_out = nn.Linear(hidden_dim, output_dim)
+
+    def forward(self, input, hidden):
+        # Ensure input is long type for embedding
+        input = input.long()  # Convert to long type for embedding
+
+        # Convert input integers to embeddings
+        embedded = self.embedding(input)  # [batch_size, 1] -> [batch_size, 1, 1]
+
+        # Process through LSTM
+        output, hidden = self.rnn_cell(embedded, hidden)
+
+        # Project to vocabulary size
+        output = self.fc_out(output.squeeze(1))
+
+        return output, hidden
+
+class EncoderDecoder(nn.Module):
+    """
+        Basic LSTM-LSTM sequence-to-sequence model for EEG-to-phoneme decoding.
+        Combines LSTM encoder for EEG processing and LSTM decoder for phoneme generation.
+        Supports teacher forcing during training.
+
+        Args:
+            encoder (nn.Module): LSTM encoder for processing EEG features
+            decoder (nn.Module): LSTM decoder for generating phoneme sequences
+    """
+    def __init__(self, encoder, decoder):
+        """
+        Initialize the basic LSTM-LSTM sequence-to-sequence model.
+
+        Args:
+            encoder (nn.Module): LSTM encoder model
+            decoder (nn.Module): LSTM decoder model
+        """
+        super().__init__()
+        self.encoder = encoder
+        self.decoder = decoder
+
+    def forward(self, src, trg, teacher_forcing_ratio=0.5):
+        """
+        Forward pass of the LSTM-LSTM model.
+
+        Args:
+            src (Tensor): Source EEG sequence [batch_size, src_seq_len, input_dim]
+            trg (Tensor): Target character sequence [batch_size, trg_seq_len]
+            teacher_forcing_ratio (float): Probability of using teacher forcing (default: 0.5)
+
+        Returns:
+            Tensor: Output character predictions [batch_size, trg_seq_len, output_dim]
+        """
+        batch_size, trg_len = trg.shape
+        outputs = torch.zeros(batch_size, trg_len, self.decoder.output_dim).to(src.device)
+
+        # Encode input sequence
+        _, hidden = self.encoder(src)
+
+        # Initialize decoder input with start token
+        input = trg[:, 0].unsqueeze(1)
+
+        for t in range(trg_len):
+            # Generate output character
+            output, hidden = self.decoder(input, hidden)
+            outputs[:, t] = output
+
+            # Teacher forcing: use ground truth as next input
+            teacher_force = torch.rand(1) < teacher_forcing_ratio
+            input = trg[:, t].unsqueeze(1) if teacher_force else output.argmax(1).unsqueeze(1)
 
         return outputs
